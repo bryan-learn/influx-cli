@@ -7,14 +7,17 @@ www.influxdb.com
 BUILD
 -----
 Building is simple:
+
     make
 
 USAGE
 -----
 Synopsis:
+
     influx-cli [-q query_string] [-w json_string]
 
 Examples:
+
     ./influx-cli -q "select * from my_series"
     ./influxctl -w '[{ "name": "test", "columns": ["value"], "points": [[8]] }]'
 
