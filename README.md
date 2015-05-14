@@ -14,7 +14,7 @@ USAGE
 -----
 Synopsis:
 
-    influx-cli [-q query_string] [-w json_string]
+    influx-cli [-q query_string][-w json_string]...
 
 Examples:
 
