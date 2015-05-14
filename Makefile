@@ -3,9 +3,9 @@ CC = gcc
 CFLAGS = -g -Wall -I./lib/
 LIBS = -lcurl
 
-influxctl: src/libinflux.c src/main.c
-	$(CC) $(CFLAGS) src/libinflux.c src/main.c $(LIBS) -o influxctl
+influx-cli: src/libinflux.c src/main.c
+	$(CC) $(CFLAGS) src/libinflux.c src/main.c $(LIBS) -o influx-cli
 
 
 clean:
-	-rm -f influxctl src/*.o src/*.a src/a.out src/core src/core.* src/*.core
+	-rm -f influx-cli src/*.o src/*.a src/a.out src/core src/core.* src/*.core

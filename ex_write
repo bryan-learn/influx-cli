@@ -1,0 +1,2 @@
+#!/bin/bash
+./influxctl -w '[{ "name": "test", "columns": ["value"], "points": [[8]] }]'

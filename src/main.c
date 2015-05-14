@@ -1,3 +1,5 @@
+/* Copyright © 2015, Pittsburgh Supercomputing Center.  All Rights Reserved. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

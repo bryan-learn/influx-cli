@@ -27,6 +27,30 @@ void set_host_url(char * url){
     host_url = strcpy(host_url, url);
 }
 
+/* InfluxDB functions - Query & Write */
+
+CURLcode influxQuery(char *query){
+    char service_url[] = "db/xsight_dev/series?u=d-admin&p=TcitoPsb&q=";
+    int size = strlen(host_url) + strlen(service_url);
+    char *url = (char *)malloc(size+1);
+    strcat(url, host_url);
+    strcat(url, service_url);
+    
+    return sendGet(url, query);
+}
+
+CURLcode influxWrite(char *data){
+    char service_url[] = "db/xsight_dev/series?u=d-admin&p=TcitoPsb";
+    int size = strlen(host_url) + strlen(service_url);
+    char *url = (char *)malloc(size+1);
+    strcat(url, host_url);
+    strcat(url, service_url);
+
+   return sendPost(url, data); 
+}
+
+/* Basic CURL functions - GET & POST */
+
 CURLcode sendPost(char *url, char *data){
     if(curl){
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -56,22 +80,3 @@ CURLcode sendGet(char *url, char *data){
     return res;
 }
 
-CURLcode influxQuery(char *query){
-    char service_url[] = "db/xsight_dev/series?u=d-admin&p=TcitoPsb&q=";
-    int size = strlen(host_url) + strlen(service_url);
-    char *url = (char *)malloc(size+1);
-    strcat(url, host_url);
-    strcat(url, service_url);
-    
-    return sendGet(url, query);
-}
-
-CURLcode influxWrite(char *data){
-    char service_url[] = "db/xsight_dev/series?u=d-admin&p=TcitoPsb";
-    int size = strlen(host_url) + strlen(service_url);
-    char *url = (char *)malloc(size+1);
-    strcat(url, host_url);
-    strcat(url, service_url);
-
-   return sendPost(url, data); 
-}
