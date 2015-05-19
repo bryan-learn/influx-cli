@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
+#include "libinflux.h"
 
 CURL *curl;
 CURLcode res;
