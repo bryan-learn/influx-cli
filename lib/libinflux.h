@@ -5,7 +5,7 @@
 #define libinflux__h
 
 extern CURL *curl;
-extern void rest_init(char *);
+extern void rest_init(char *, char *);
 extern void rest_cleanup();
 extern CURLcode sendPost(char *, char *);
 extern CURLcode sendGet(char *, char *);
