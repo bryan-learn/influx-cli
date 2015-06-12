@@ -56,9 +56,10 @@ CURLcode influxQuery(char *query){
     char q[] = "&q=";   //parameter appended to url for queries
     int size = strlen(host_url) + strlen(service_url) + strlen(q);
     char *url = (char *)malloc(size+1);
-    strcat(url, host_url);
-    strcat(url, service_url);
-    strcat(url, q);
+
+    strncat(url, host_url, strlen(host_url));
+    strncat(url, service_url, strlen(service_url));
+    strncat(url, q, strlen(q));
     
     if(debug){printf("[q: %s]\n", url);}
     
@@ -72,8 +73,8 @@ CURLcode influxQuery(char *query){
 CURLcode influxWrite(char *data){
     int size = strlen(host_url) + strlen(service_url);
     char *url = (char *)malloc(size+1);
-    strcat(url, host_url);
-    strcat(url, service_url);
+    strncat(url, host_url, strlen(host_url));
+    strncat(url, service_url, strlen(service_url));
 
     if(debug){printf("[w: %s]\n", url);}
 
@@ -105,8 +106,8 @@ CURLcode sendGet(char *url, char *data){
             int size = strlen(url)+strlen(encoded_data)+1;
             char *tmp = malloc(size);
             if(tmp){
-                strcat(tmp,url);
-                strcat(tmp,encoded_data);
+                strncat(tmp, url, strlen(url));
+                strncat(tmp, encoded_data, strlen(encoded_data));
                 url = tmp;
                 curl_free(encoded_data);
             }
