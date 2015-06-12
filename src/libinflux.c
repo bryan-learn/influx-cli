@@ -63,7 +63,9 @@ CURLcode influxQuery(char *query){
     
     if(debug){printf("[q: %s]\n", url);}
     
-    return sendGet(url, query);
+    res = sendGet(url, query);
+    free(url);
+    return res;
 }
 
 /* Writes the JSON object, *data, to the database represented by *service_url.
@@ -78,7 +80,9 @@ CURLcode influxWrite(char *data){
 
     if(debug){printf("[w: %s]\n", url);}
 
-    return sendPost(url, data); 
+    res = sendPost(url, data);
+    free(url);
+    return res; 
 }
 
 /* Basic CURL functions - GET & POST */
