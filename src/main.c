@@ -16,8 +16,8 @@ int main(int argc, char *argv[]){
 
     //prepare curl
     char url[]="http://indigo.psc.edu:8086/";
-    char service[]="db/xsight_dev/series?u=t&p=1234";
-    rest_init(url, service);
+    rest_init();
+    influxConn *hostA = create_conn(url, "testdb", "dbuser", "<your password>");
     CURLcode res;
 
     //parse arguments
@@ -27,13 +27,13 @@ int main(int argc, char *argv[]){
         {
             case 'q':
                 //printf("query: %s", &argv[1][3]);
-                res = influxQuery(&argv[1][3]);
+                res = influxQuery(hostA, &argv[1][3]);
                 if( res != CURLE_OK)
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
                 break;
             case 'w':
                 //printf("write:  %s", &argv[1][3]);
-                res = influxWrite(&argv[1][3]);
+                res = influxWrite(hostA, &argv[1][3]);
                 if( res != CURLE_OK)
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
                 break;
@@ -46,6 +46,7 @@ int main(int argc, char *argv[]){
     }
 
 
-    rest_cleanup();
+    rest_cleanup(hostA);
+    free(hostA);
     return 0;
 }
