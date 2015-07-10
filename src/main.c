@@ -16,7 +16,7 @@ int main(int argc, char *argv[]){
 
     //prepare curl
     char url[]="http://indigo.psc.edu:8086/";
-    char service[]="db/xsight_dev/series?u=d-admin&p=TcitoPsb";
+    char service[]="db/xsight_dev/series?u=t&p=1234";
     rest_init(url, service);
     CURLcode res;
 

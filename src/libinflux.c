@@ -8,9 +8,9 @@
 
 CURL *curl;
 CURLcode res;
-char *host_url;     // URL hosting influxDB. Eg. "http://www.example.net/"
-char *service_url;  // URL for the specific type of request. 
-                    // Eg. "db/<database-name>/series?u=<username>&p=<password>"
+char *host_url = NULL;     // URL hosting influxDB. Eg. "http://www.example.net/"
+char *service_url = NULL;  // URL for the specific type of request. 
+                            // Eg. "db/<database-name>/series?u=<username>&p=<password>"
 int debug = 0;
 
 /* Set-up and tear-down functions */
@@ -18,13 +18,16 @@ int debug = 0;
 //Prepares libinflux & cURL - call before any other libinflux functions
 void rest_init(char *host, char *service)
 {
+    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
 
-    host_url = (char *)malloc(strlen(host));
-    host_url = strcpy(host_url, host);
+    host_url = (char *)malloc(sizeof(char) * (strlen(host) + 1));
+    host_url[0] = '\0';
+    strncpy(host_url, host, strlen(host));
 
-    service_url = (char *)malloc(strlen(service));
-    service_url = strcpy(service_url, service);
+    service_url = (char *)malloc(sizeof(char) * (strlen(service) + 1));
+    service_url[0] = '\0';
+    strncpy(service_url, service, strlen(service));
 
 }
 
@@ -37,13 +40,13 @@ void rest_cleanup()
 }
 
 void set_host_url(char * url){
-    host_url = (char *)realloc(host_url, strlen(url));
-    host_url = strcpy(host_url, url);
+    host_url = (char *)realloc(host_url, sizeof(char) * (strlen(url) + 1));
+    strncpy(host_url, url, strlen(url));
 }
 
 void set_service_url(char * url){
-    service_url = (char *)realloc(service_url, strlen(url));
-    service_url = strcpy(service_url, url);
+    service_url = (char *)realloc(service_url, sizeof(char) * (strlen(url) + 1));
+    strncpy(service_url, url, strlen(url));
 }
 
 /* InfluxDB functions - Query & Write */
@@ -54,10 +57,8 @@ void set_service_url(char * url){
  */
 CURLcode influxQuery(char *query){
     char q[] = "&q=";   //parameter appended to url for queries
-    int size = strlen(host_url) + strlen(service_url) + strlen(q);
-    char *url = (char *)malloc(size+1);
-
-    strncat(url, host_url, strlen(host_url));
+    char *url = strdup(host_url);
+    url = realloc(url, sizeof(char *) * ((int)strlen(service_url) + (int)strlen(q) +1) );
     strncat(url, service_url, strlen(service_url));
     strncat(url, q, strlen(q));
     
@@ -73,9 +74,8 @@ CURLcode influxQuery(char *query){
  * Returns a CURLcode that is globally stored as res (until the next call)
  */
 CURLcode influxWrite(char *data){
-    int size = strlen(host_url) + strlen(service_url);
-    char *url = (char *)malloc(size+1);
-    strncat(url, host_url, strlen(host_url));
+    char *url = strdup(host_url);
+    url = realloc(url, sizeof(char *) * ((int)strlen(service_url)+1) );
     strncat(url, service_url, strlen(service_url));
 
     if(debug){printf("[w: %s]\n", url);}
@@ -107,12 +107,9 @@ CURLcode sendGet(char *url, char *data){
     if(curl){
         if(data){ //urlencode data
             char *encoded_data = curl_easy_escape(curl, data, strlen(data));
-            int size = strlen(url)+strlen(encoded_data)+1;
-            char *tmp = malloc(size);
-            if(tmp){
-                strncat(tmp, url, strlen(url));
-                strncat(tmp, encoded_data, strlen(encoded_data));
-                url = tmp;
+            url = realloc(url, sizeof(char *) * ((int)strlen(encoded_data)+1) );
+            if(url){
+                strncat(url, encoded_data, strlen(encoded_data));
                 curl_free(encoded_data);
             }
         }
