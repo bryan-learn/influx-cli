@@ -17,8 +17,7 @@ int main(int argc, char *argv[]){
     //prepare curl
     char url[]="http://indigo.psc.edu:8086/";
     rest_init();
-//    influxConn *hostA = create_conn(url, "testdb", "dbuser", "<your password>");
-    influxConn *hostA = create_conn(url, "xsight", "dbuser", "TcitoPsb");
+    influxConn *hostA = create_conn(url, "testdb", "dbuser", "<your password>");
     CURLcode res;
 
     //parse arguments
