@@ -61,10 +61,10 @@ char* build_query_url(influxConn *conn)
 
     //allocate space for parameterized url
     size_t size = sizeof(char *) * ( (int)strlen(conn->host_url)
-                + (int)strlen(endpoint) 
-                + (int)strlen(conn->db)+3 
-                + (int)strlen(conn->user)+3 
-                + (int)strlen(conn->pass)+3 +3 + 1);
+                + (int)strlen(endpoint)             // warning - magic numbers 
+                + (int)strlen(conn->db)+3           // 'db=' 
+                + (int)strlen(conn->user)+3         // '&u='
+                + (int)strlen(conn->pass)+3 +3 + 1);// '&p=', '&q='
     char *url = malloc(size);
 
     //concatenate endpoint and parameters to host_url
@@ -147,12 +147,15 @@ CURLcode sendGet(influxConn *conn, char *url, char *data){
     if(conn->curl){
         if(data){ //urlencode data
             char *encoded_data = curl_easy_escape(conn->curl, data, strlen(data));
-            url = realloc(url, sizeof(char *) * ((int)strlen(encoded_data)+1) );
+            url = realloc(url, sizeof(char *) * ((int) strlen(url) + strlen(encoded_data) + 1) );
             if(url){
                 strncat(url, encoded_data, strlen(encoded_data));
                 curl_free(encoded_data);
             }
         }
+
+        if(debug){printf("[q: %s]\n", url);}
+        
         curl_easy_setopt(conn->curl, CURLOPT_URL, url);
         conn->resCode = curl_easy_perform(conn->curl);
     }
