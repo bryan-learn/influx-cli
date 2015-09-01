@@ -22,5 +22,4 @@ extern CURLcode sendGet(influxConn *, char *, char *);
 extern CURLcode influxQuery(influxConn *, char *);
 extern CURLcode influxWrite(influxConn *, char *);
 
-
 #endif
