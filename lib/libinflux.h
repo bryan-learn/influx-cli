@@ -14,7 +14,7 @@ typedef struct {
 } influxConn;
 extern void rest_init();
 extern void rest_cleanup();
-extern influxConn* create_conn(char *, char *,char *, char *);
+extern influxConn* create_conn(char *, char *,char *, char *, int);
 extern char* build_write_url(influxConn*);
 extern char* build_query_url(influxConn*);
 extern CURLcode sendPost(influxConn *, char *, char *);

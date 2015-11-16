@@ -15,7 +15,9 @@ FILE *resOut;   //File handle for response log
 //Prepares libinflux & cURL - call before any other libinflux functions
 void rest_init()
 {
-    curl_global_init(CURL_GLOBAL_ALL);
+    curl_global_init(CURL_GLOBAL_SSL);
+
+    
 
     //Open file pointer used for writing server response.
 //    devnull = fopen("/dev/null", "w+");
@@ -25,7 +27,7 @@ void rest_init()
 /* Creates and initilizes a new influxConn structure. A pointer to the new
  * struct is returned. User should free the returned pointer before exiting.
  */
-influxConn* create_conn(char *host, char *database, char *user, char *pass)
+influxConn* create_conn(char *host, char *database, char *user, char *pass, int ssl_verify)
 {
     //create new influxConn structure
     influxConn *newConn = malloc(sizeof(influxConn));
@@ -36,6 +38,19 @@ influxConn* create_conn(char *host, char *database, char *user, char *pass)
     newConn->db = strndup(database, strlen(database));
     newConn->user = strndup(user, strlen(user));
     newConn->pass = strndup(pass, strlen(pass));
+
+    // check host protocol
+    if(strstr(newConn->host_url, "https://")){
+        // using SSL
+        curl_easy_setopt(newConn->curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+
+        // should be verify peer certificate (usually yes!)
+        if(ssl_verify == 0){
+            curl_easy_setopt(newConn->curl, CURLOPT_SSL_VERIFYPEER, 0);
+        }else{
+            curl_easy_setopt(newConn->curl, CURLOPT_SSL_VERIFYPEER, 1);
+        }
+    }
 
     return newConn;
 }
@@ -86,6 +101,7 @@ char* build_query_url(influxConn *conn)
 void rest_cleanup(influxConn *conn)
 {
     curl_easy_cleanup(conn->curl);
+    curl_global_cleanup();
 //    fclose(devnull);
     fclose(resOut);
 }

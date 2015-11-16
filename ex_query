@@ -1,2 +1,2 @@
 #!/bin/bash
-./influx-cli -q "select * from test"
+./influx-cli -q "select * from some_measurement"

@@ -1,2 +1,2 @@
 #!/bin/bash
-./influx-cli -w '[{ "name": "test", "columns": ["value"], "points": [[8]] }]'
+./influx-cli -w 'some_measurement value=8'
