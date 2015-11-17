@@ -38,21 +38,30 @@ influxConn* create_conn(char *host, char *database, char *user, char *pass, int 
     newConn->db = strndup(database, strlen(database));
     newConn->user = strndup(user, strlen(user));
     newConn->pass = strndup(pass, strlen(pass));
+    newConn->ssl = ssl_verify;
 
-    // check host protocol
+    //check for https protocol
     if(strstr(newConn->host_url, "https://")){
-        // using SSL
+        //enable SSL
         curl_easy_setopt(newConn->curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
-
-        // should be verify peer certificate (usually yes!)
-        if(ssl_verify == 0){
-            curl_easy_setopt(newConn->curl, CURLOPT_SSL_VERIFYPEER, 0);
-        }else{
-            curl_easy_setopt(newConn->curl, CURLOPT_SSL_VERIFYPEER, 1);
-        }
+        //set ssl peer verification on/off
+        curl_easy_setopt(newConn->curl, CURLOPT_SSL_VERIFYPEER, newConn->ssl);
+    }else{
+        //disable ssl
+        newConn->ssl = -1;
     }
 
     return newConn;
+}
+
+void update_ssl_opts(influxConn *conn)
+{
+    if(conn->ssl == 0 || conn->ssl == 1){ //if ssl is enabled
+        //enable SSL
+        curl_easy_setopt(conn->curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
+        //set ssl peer verification on/off
+        curl_easy_setopt(conn->curl, CURLOPT_SSL_VERIFYPEER, conn->ssl);
+    }
 }
 
 char* build_write_url(influxConn *conn)
@@ -159,6 +168,7 @@ CURLcode sendPost(influxConn *conn, char *url, char *data){
         curl_easy_setopt(conn->curl, CURLOPT_POSTFIELDSIZE, (long)strlen(data));
         curl_easy_setopt(conn->curl, CURLOPT_POSTFIELDS, data);
         curl_easy_setopt(conn->curl, CURLOPT_WRITEDATA, resOut);
+        update_ssl_opts(conn);
         conn->resCode = curl_easy_perform(conn->curl);
     }
     free(url);
@@ -183,6 +193,7 @@ CURLcode sendGet(influxConn *conn, char *url, char *data){
         
         curl_easy_setopt(conn->curl, CURLOPT_URL, url);
         curl_easy_setopt(conn->curl, CURLOPT_WRITEDATA, resOut);
+        update_ssl_opts(conn);
         conn->resCode = curl_easy_perform(conn->curl);
     }
     free(url);

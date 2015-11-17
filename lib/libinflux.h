@@ -11,6 +11,7 @@ typedef struct {
     char *db;
     char *user;
     char *pass;
+    int ssl; // 1: ssl enabled & verify peer; 0: insecure ssl - don't verify peer; -1: ssl disabled
 } influxConn;
 extern void rest_init();
 extern void rest_cleanup();
