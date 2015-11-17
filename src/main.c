@@ -7,9 +7,10 @@
 
 void usage(){
     printf("Usage:\n");
-    printf(" -s <0 or 1> (disable or enable ssl peer verification. Must precede all other arguments.)\n");
-    printf(" -q <query>\n");
-    printf(" -w <data>\n");
+    printf(" -h \n\tDisplays this help text.\n\n");
+    printf(" -s <0 or 1> \n\tDisable or enable ssl peer verification. Only affects succeding arguments.)\n\n");
+    printf(" -q <query>\n\tSend query string to the database.\n\n");
+    printf(" -w <data>\n\tSend write string to the database.\n\n");
     exit(8);
 }
 
