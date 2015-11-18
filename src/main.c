@@ -19,7 +19,7 @@ int main(int argc, char *argv[]){
     //prepare curl
     char url[]="https://hotel.psc.edu:8086/";
     int ssl_verify = 1;
-    rest_init();
+    libinflux_init();
     influxConn *hostA = create_conn(url, "test", "dbuser", "TcitoPsb", ssl_verify);
     CURLcode res;
 
@@ -33,20 +33,69 @@ int main(int argc, char *argv[]){
                     ssl_verify = 0;
                 else if(argv[1][3] == '1')
                     ssl_verify = 1;
+                
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
                 break;
 
             case 'q': // query
                 hostA->ssl = ssl_verify;
                 res = influxQuery(hostA, &argv[1][3]);
-                if( res != CURLE_OK)
+                if( res != CURLE_OK){
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                    printf("%s\n", hostA->curl_response);
+                }
+                else{
+                    while(!hostA->data_ready){} //wait until data is ready
+                    printf("%s\n", hostA->curl_response);
+                }
+
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
                 break;
 
             case 'w': // write
                 hostA->ssl = ssl_verify;
                 res = influxWrite(hostA, &argv[1][3]);
+                if( res != CURLE_OK){
+                    fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                }
+                else{
+                    while(!hostA->data_ready){} //wait until data is ready
+                    //printf("%s\n", hostA->curl_response);
+                }
+
+                
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
+                break;
+
+
+            case 't': // test/check connection
+                hostA->ssl = ssl_verify;
+                res = influxCheck(hostA);
                 if( res != CURLE_OK)
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+                else{
+                    while(!hostA->data_ready){} //wait until data is ready
+                    printf("%s\n", (char*)hostA->curl_response);
+                }
+
+                //arguments were consumed
+                argv += 1;
+                argc -= 1;
+                break;
+
+
+            case 'd': // enable debug
+                set_debug(true);
+                
+                //arguments were consumed
+                argv += 1;
+                argc -= 1;
                 break;
 
             default:
@@ -54,13 +103,10 @@ int main(int argc, char *argv[]){
                 usage();
         }
 
-        //arguments were consumed
-        argv += 2;
-        argc -= 2;
     }
 
-
-    rest_cleanup(hostA);
-    free(hostA);
+    free_conn(hostA);
+    libinflux_cleanup();
+    
     return 0;
 }
