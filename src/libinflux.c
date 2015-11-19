@@ -187,7 +187,7 @@ size_t writeCallback(char *contents, size_t size, size_t nmemb, influxConn *conn
         if(influx_debug){printf("User data callback not defined. Redirecting to stdout.\n");}
         //otherwise print response to stdout
         if(response)
-            printf("%s",response);
+            printf("%s\n",response);
     }
 
     return realsize;
