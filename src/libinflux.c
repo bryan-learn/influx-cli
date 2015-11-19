@@ -38,8 +38,7 @@ influxConn* create_conn(char *host, char *database, char *user, char *pass, int 
 
     //initilize members
     newConn->curl = curl_easy_init();
-    newConn->curl_response = NULL;
-    newConn->data_ready = false;
+    newConn->on_data_ready = NULL;
     newConn->host_url = strndup(host, strlen(host));
     newConn->db = strndup(database, strlen(database));
     newConn->user = strndup(user, strlen(user));
@@ -67,7 +66,6 @@ influxConn* create_conn(char *host, char *database, char *user, char *pass, int 
 void free_conn(influxConn *conn)
 {
     curl_easy_cleanup(conn->curl);
-    free(conn->curl_response);
     free(conn->host_url);
     free(conn->db);
     free(conn->user);
@@ -75,6 +73,14 @@ void free_conn(influxConn *conn)
     free(conn);
 }
 
+/* Allows the user to pass in a function to handle server response when it is
+ * ready. The user-defined function must accept a char pointer as a parameter.
+ * The function must return an int: 0 one success, non-zero on failure.
+ */
+void set_callback(influxConn *conn, int (*callback)(char*))
+{
+    conn->on_data_ready = callback;
+}
 
 /* Internal utility functions  */
 
@@ -151,6 +157,43 @@ void set_debug(bool debug){
     influx_debug = debug;
 }
 
+/* Function that handles cURL's write callback. It allocates a new string 
+ * containing the server response. The response string is passed to the
+ * user-defined callback, influxConn->on_data_ready, if it is defined.
+ * Otherwise, it sends the response string to stdout.
+ */
+size_t writeCallback(char *contents, size_t size, size_t nmemb, influxConn *conn)
+{
+    char *response;
+    size_t realsize = size * nmemb;
+
+    //allocate memory for new data
+    if((response = malloc(realsize + sizeof(char))) == NULL){
+        fprintf(stderr, "malloc returned NULL");
+        return 0;
+    }
+
+    //copy data from contents to new pointer
+    memcpy(response, contents, realsize);
+    response[nmemb] = '\0'; //null terminate string
+
+    //if user defined a callback
+    if(conn->on_data_ready){
+        //pass response to callback
+        if(conn->on_data_ready(response) != 0){
+            fprintf(stderr, "user callback returned non-zero result");
+        }
+    }else{
+        if(influx_debug){printf("User data callback not defined. Redirecting to stdout.\n");}
+        //otherwise print response to stdout
+        if(response)
+            printf("%s",response);
+    }
+
+    return realsize;
+}
+
+
 /* InfluxDB functions */
 
 
@@ -164,7 +207,6 @@ CURLcode influxQuery(influxConn *conn, char *query){
     if(influx_debug){printf("[q: %s]\n", url);}
     
     update_ssl_opts(conn);
-    conn->data_ready = false;
     conn->result_code = sendGet(conn, url, query);
     return conn->result_code;
 }
@@ -179,9 +221,7 @@ CURLcode influxWrite(influxConn *conn, char *data){
     if(influx_debug){printf("[w: %s]\n", url);}
 
     update_ssl_opts(conn);
-    conn->data_ready = true; //no server response when writing data
     conn->result_code = sendPost(conn, url, data);
-    if(influx_debug){printf("[w: %s]\n", conn->curl_response);}
     return conn->result_code; 
 }
 
@@ -191,7 +231,6 @@ CURLcode influxWrite(influxConn *conn, char *data){
 bool influxCheck(influxConn *conn)
 {
     update_ssl_opts(conn);
-    conn->data_ready = false;
     conn->result_code = sendGet(conn, conn->host_url, NULL);
     return conn->result_code;
 }
@@ -252,38 +291,5 @@ CURLcode sendGet(influxConn *conn, char *url, char *data){
     return resultCode;
 }
 
-size_t writeCallback(char *contents, size_t size, size_t nmemb, influxConn *conn)
-{
-    if(influx_debug){
-        printf("[write callback]:\n\tstring: %s\n\tsize: %d\n\tnum: %d\n\t", contents, size, nmemb);
-    }
-    
-    if(nmemb < 1){
-        return 0;
-    }else{
-        size_t realsize = size * nmemb;
-        char *tmp;
-    
-        //allocate memory for new data
-        if((tmp = malloc(realsize + sizeof(char))) == NULL){
-            fprintf(stderr, "malloc returned NULL");
-            return 0;
-        }else {
-            free(conn->curl_response);
-            conn->curl_response = tmp; 
-        }
-    
-        //copy data from contents to userdata
-        memcpy(conn->curl_response, contents, realsize);
-        conn->curl_response[nmemb] = '\0';
 
-        //data is ready for user to ready
-        conn->data_ready = true;
-    
-        if(influx_debug){
-            printf("[write callback]: %s\nsize: %d\n", conn->curl_response, realsize);
-        }
-    
-        return realsize;
-    }
-}
+

@@ -8,8 +8,7 @@
 typedef struct {
     CURL *curl;
     CURLcode result_code;
-    char *curl_response;
-    bool data_ready;
+    int (*on_data_ready)(char *); //user-defined callback function. Should return 0 unless error.
     char *host_url;
     char *db;
     char *user;
@@ -20,6 +19,7 @@ extern void libinflux_init();
 extern void libinflux_cleanup();
 extern influxConn* create_conn(char *, char *,char *, char *, int);
 extern void free_conn(influxConn *);
+extern void set_callback(influxConn *, int (*)(char*));
 extern char* build_write_url(influxConn*);
 extern char* build_query_url(influxConn*);
 extern void set_debug(bool);

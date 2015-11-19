@@ -14,6 +14,17 @@ void usage(){
     exit(8);
 }
 
+int dataCallback(char *response)
+{
+    if(response){
+        printf("%s\n", response);
+    }else{
+        printf("empty response\n");
+    }
+
+    return 0;
+}
+
 int main(int argc, char *argv[]){
 
     //prepare curl
@@ -22,6 +33,8 @@ int main(int argc, char *argv[]){
     libinflux_init();
     influxConn *hostA = create_conn(url, "test", "dbuser", "TcitoPsb", ssl_verify);
     CURLcode res;
+
+    set_callback(hostA, dataCallback);
 
     //parse arguments
     printf("%s:\n", argv[0]);
@@ -44,11 +57,6 @@ int main(int argc, char *argv[]){
                 res = influxQuery(hostA, &argv[1][3]);
                 if( res != CURLE_OK){
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-                    printf("%s\n", hostA->curl_response);
-                }
-                else{
-                    while(!hostA->data_ready){} //wait until data is ready
-                    printf("%s\n", hostA->curl_response);
                 }
 
                 //arguments were consumed
@@ -62,11 +70,6 @@ int main(int argc, char *argv[]){
                 if( res != CURLE_OK){
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
                 }
-                else{
-                    while(!hostA->data_ready){} //wait until data is ready
-                    //printf("%s\n", hostA->curl_response);
-                }
-
                 
                 //arguments were consumed
                 argv += 2;
@@ -79,10 +82,6 @@ int main(int argc, char *argv[]){
                 res = influxCheck(hostA);
                 if( res != CURLE_OK)
                     fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-                else{
-                    while(!hostA->data_ready){} //wait until data is ready
-                    printf("%s\n", (char*)hostA->curl_response);
-                }
 
                 //arguments were consumed
                 argv += 1;
