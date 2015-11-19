@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
     influxConn *hostA = create_conn(url, "test", "dbuser", "TcitoPsb", ssl_verify);
     CURLcode res;
 
-//    set_callback(hostA, dataCallback);
+    set_callback(hostA, dataCallback);
 
     //parse arguments
     printf("%s:\n", argv[0]);
