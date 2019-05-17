@@ -29,9 +29,12 @@ int main(int argc, char *argv[]){
 
     //prepare curl
     char url[]="https://hotel.psc.edu:8086/";
+    char database[]="test";
+    char user[]="dbuser";
+    char password[]="notarealpassword";
     int ssl_verify = 1;
     libinflux_init();
-    influxConn *hostA = create_conn(url, "test", "dbuser", "TcitoPsb", ssl_verify);
+    influxConn *hostA = create_conn(url, database, user, password, ssl_verify);
     CURLcode res;
 
     set_callback(hostA, dataCallback);
@@ -41,6 +44,27 @@ int main(int argc, char *argv[]){
     while( (argc > 1) && (argv[1][0] == '-') ){
         switch (argv[1][1])
         {
+            case 't': // set database ('table') to interact with
+                hostA->db = &argv[1][3];
+
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
+                break;
+            case 'u': // set username for database auth
+                hostA->user = &argv[1][3];
+
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
+                break;
+            case 'p': // set passowrd for database auth
+                hostA->pass = &argv[1][3];
+
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
+                break;
             case 's': // set ssl peer verification. On: 1, Off: 0
                 if(argv[1][3] == '0')
                     ssl_verify = 0;
@@ -77,7 +101,7 @@ int main(int argc, char *argv[]){
                 break;
 
 
-            case 't': // test/check connection
+            case 'c': // test/check connection
                 hostA->ssl = ssl_verify;
                 res = influxCheck(hostA);
                 if( res != CURLE_OK)
