@@ -66,7 +66,7 @@ influxConn* create_conn(char *host, char *database, char *user, char *pass, int 
 void free_conn(influxConn *conn)
 {
     curl_easy_cleanup(conn->curl);
-    free(conn->host_url);
+    //free(conn->host_url);
     //free(conn->db);
     //free(conn->user);
     //free(conn->pass);

@@ -7,7 +7,6 @@
 
 void usage(){
     printf("Usage:\n");
-    printf(" -h \n\tDisplays this help text.\n\n");
     printf(" -s <0 or 1> \n\tDisable or enable ssl peer verification. Only affects succeding arguments.)\n\n");
     printf(" -q <query>\n\tSend query string to the database.\n\n");
     printf(" -w <data>\n\tSend write string to the database.\n\n");
@@ -44,6 +43,13 @@ int main(int argc, char *argv[]){
     while( (argc > 1) && (argv[1][0] == '-') ){
         switch (argv[1][1])
         {
+            case 'h': // set host url for influxdb instance
+                hostA->host_url = &argv[1][3];
+
+                //arguments were consumed
+                argv += 2;
+                argc -= 2;
+                break;
             case 't': // set database ('table') to interact with
                 hostA->db = &argv[1][3];
 
